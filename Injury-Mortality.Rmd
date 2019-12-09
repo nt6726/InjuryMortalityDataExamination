@@ -1,0 +1,286 @@
+---
+title: "Injury Mortality in United States"
+author: "Andy Wang, Nathan Tsai, Kevin Vu, Sharmin Anwar"
+resource_files:
+- .Renviron
+output:
+  html_notebook:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+runtime: shiny
+---
+This is an R Interactive Document, which uses the [R Markdown](http://rmarkdown.rstudio.com/authoring_basics.html) language to generate HTML.
+
+#Load Packages
+This [code chunk](http://rmarkdown.rstudio.com/authoring_rcodechunks.html) loads the packages required to run the R code in the document.
+The last line of this code chunk enables document caching.
+
+Here's what's loaded:  
+library(tidyverse)  
+library(shiny)  
+library(grid)  
+library(data.world)  
+library(DT)  
+library(shinydashboard)  
+library(plotly)  
+library(lubridate)  
+
+```{r setup, echo=FALSE}
+library(tidyverse)
+library(shiny)
+library(grid)
+library(data.world)
+library(DT)
+library(shinydashboard)
+library(plotly)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#data.world Project and GitHub Links
+A link to data.world Project:
+
+https://data.world/andywang6666/s18-db-project-3
+
+A link to GitHub Classroom Repository:
+
+https://github.com/CannataUT/s18dbproject3-wang-vu-tsai-anwar
+
+#data.world Insights
+
+####[Insight01: Injury Mortality - Reckless Males](https://data.world/andywang6666/s18-db-project-3/insights/b1549527-dae4-4ddf-9486-82b85837bf72)
+
+Men and women tend to have different statistics conerning different topics. Thus, there is likely an interesting find so it makes sense to organize the deaths by sex. The histogram shows that there is a significant difference with the deaths of males being a lot higher than the deaths of females.
+
+The first graph shows that the population is nearly 50/50 between males and females, so the number of deaths are not due to a population difference. 
+
+<iframe src="https://public.tableau.com/views/Project3_176/PopulationbySex?:showVizHome=no" width="800" height="500"></iframe>
+
+```{r}
+source("Insight01Data.R", local = TRUE)
+
+project <- "https://data.world/andywang6666/s18-db-project-3"
+data.world::set_config(cfg_env("DW_API"))
+sexes <- data.world::query(data.world::qry_sql(
+ "
+	select distinct sex
+	from injury_mortality_in_united_states
+ "),
+dataset = project)
+
+Sex <- eventReactive(c(input$selectSex_1), { 
+  library('stringr')
+  str_c(input$selectSex_1, collapse=', ')
+})
+
+inputPanel(
+  selectInput("selectSex_1", label = "Select Sex", choices = sexes, multiple=TRUE, selected=c("Both sexes", "Female", "Male"))
+)
+
+dashboardPage(
+  dashboardHeader(
+  ),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Deaths by Sex", tabName = "histogram", icon = icon("dashboard"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      # 1. "Deaths by Sex" tab content
+      tabItem(tabName = "histogram",
+        source("Insight01UI.R",local = TRUE)$value
+      )
+    )
+  )
+)
+source("Insight01Server.R", local = TRUE)
+```
+
+
+####[Insight02: Deaths for Specific Injury Mechanisms for Different Years](https://data.world/andywang6666/s18-db-project-3/insights/3ee58026-58dd-40af-93f2-19037b2552bc)
+
+####[Insight03: Injury Intents causing Death for each Year](https://data.world/andywang6666/s18-db-project-3/insights/b8e3e762-db6f-4295-943d-73b331087d5a)
+
+####[Insight04: Injury Mechanisms Causing Death for Each Age Group](https://data.world/andywang6666/s18-db-project-3/insights/4171eb5a-e807-40c6-b410-e0b152f097d1)
+
+####[Insight05: Injury Mortality - Increasing Life Expectancy](https://data.world/andywang6666/s18-db-project-3/insights/073b830e-6c6b-4759-85b5-5852f920e376)
+
+Things change over time, so I decided to graph deaths by year. The number of deaths increases every year which makes sense because of increasing population. The interesting thing I found is by color coding the age groups. Although it is expected that the population is increasing, the deaths by age group reveals an interesting trend.
+
+<iframe src="https://public.tableau.com/views/Project3_176/DeathsbyYearandAge?:showVizHome=no" width="800" height="500"></iframe>
+
+
+####[Insight06: Population by Year and Age](https://data.world/andywang6666/s18-db-project-3/insights/7b4a79ff-8d2c-4d17-a25a-be80e0155b9c)
+
+We were wondering if changes in the population could have also affected the number of people dying. Over the years, the population is gradually increasing. From this embedded workbook, we can see that the population of the older age groups are increasing. Isolating one age group at a time made it easier to see that the older age groups were increasing quicker and more consistently over the years. With this increase in population for these age groups, there is also an expected increase in the number of deaths because there are more people who are available to die.  
+<iframe src="https://public.tableau.com/views/p3b1/Sheet4?:showVizHome=no" width="800" height="500"></iframe>
+
+####[Insight07: Deaths by Age, Sex, and Injury Mechanism](https://data.world/andywang6666/s18-db-project-3/insights/9328f73d-35c3-4333-b1a2-0339a10dd82c)
+
+####[Insight08: Injury Mortality - Intent of Homicide](https://data.world/andywang6666/s18-db-project-3/insights/55e04bf1-19fe-47f5-924c-1c4fcca2f2eb)
+
+Originally, I found that deaths by injury intents did not result in any interesting things. So I went back to the idea that males and females have different statistics and further organized the data by sex. That is how I found that Non-Hispanic black males have proportionally higher deaths by homocide.
+
+<iframe src="https://public.tableau.com/views/Project3_176/DeathsbyInjuryIntent?:showVizHome=no" width="800" height="500"></iframe>
+
+
+####[Insight09: Injury Morality - Unintentional Poisoning](https://data.world/andywang6666/s18-db-project-3/insights/c4a054bc-47bf-4b38-a5b3-f0358b1178e9)
+
+Injury mechanism seemed like it can show something interesting. So by organizing the deaths by injury mechanism, I found out that there were many deaths due to motor vehicle traffic, poisoning, and firearms. The high number of deaths by poisoning was unexpected and I was curious as to why so many people were dying from it. I added a color code based on injury intent and found that motor vehicle traffic deaths totally consists of unintentional deaths, poisoning is mostly due to unintentional deaths, and firearms mostly consist of suicide and homocide.
+
+<iframe src="https://public.tableau.com/views/Project3_176/DeathsbyInjuryMechanism?:showVizHome=no" width="800" height="500"></iframe>
+
+
+####[Insight10: Deaths by Drowning for Each Sex by Age](https://data.world/andywang6666/s18-db-project-3/insights/bb7da3d4-2584-4cbc-bbb7-8079b7e07407)
+
+####[Insight11: Races and Death](https://data.world/andywang6666/s18-db-project-3/insights/e468df47-6fef-4768-a78b-05a0b5b5303f)
+
+####[Insight12: Sex, Death, and Race](https://data.world/andywang6666/s18-db-project-3/insights/81136302-18af-4e37-81a6-116d4a79e8a5)
+
+####[Insight13: Age, and Death](https://data.world/andywang6666/s18-db-project-3/insights/575be5a5-58ed-4333-8635-85d614d195eb)
+
+####[Insight14: Deaths by Year and Sex](https://data.world/andywang6666/s18-db-project-3/insights/9900f790-3d5a-490b-a84a-b09a0af53bd7)
+
+From this graph in the embedded workbook it is clear that not only do men have more deaths than women, they actually have twice the deaths of women for every year. Like the previous graphs, it also shows an increase of total deaths as the years progress. 
+<iframe src="https://public.tableau.com/views/p3i3/Sheet1??:showVizHome=no" width="800" height="500"></iframe>
+
+####[Insight15: Deaths per Year of Ages Under 15](https://data.world/andywang6666/s18-db-project-3/insights/cd000430-93b2-4cfa-b9b8-947fe86201c2)
+
+####[Insight16: Deaths by Year and Sex for Children Less than 15](https://data.world/andywang6666/s18-db-project-3/insights/962f5482-0d00-4875-ad9c-caf91e143c3c)
+
+####[Insight17: Injury Intent by Race](https://data.world/andywang6666/s18-db-project-3/insights/46a6f78b-69e3-4466-a6cf-7f0838e19613)
+
+####[Insight18: Injury Mortality - Inconsistent Male Deaths](https://data.world/andywang6666/s18-db-project-3/insights/3c5fd5d9-39c9-4031-85df-b7f9fbed9dbf)
+
+Back on the issue of the difference between male and female statistics, there could also be a difference in injury mechanism. Would males have more deaths by firearms? Would females have more deaths by motor vehicle traffic? I concluded that males have more deaths than females, but did not find any interesting findings. However, I noticed that males had more extreme outliers than females. There were certain years that males died significantly more or less then females.
+
+```{r}
+source("Insight18Data.R", local = TRUE)
+```
+
+```{r}
+project <- "https://data.world/andywang6666/s18-db-project-3"
+data.world::set_config(cfg_env("DW_API"))
+sexes <- data.world::query(data.world::qry_sql(
+ "
+	select distinct sex
+	from injury_mortality_in_united_states
+ "),
+dataset = project)
+
+Sex <- eventReactive(c(input$selectSex_18), { 
+  library('stringr')
+  str_c(input$selectSex_18, collapse=', ')
+})
+
+inputPanel(
+  selectInput("selectSex_18", label = "Select Sex", choices = sexes, multiple=TRUE, selected=c("Both sexes", "Female", "Male"))
+)
+
+dashboardPage(
+  dashboardHeader(
+  ),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Deaths by Injury Mechanism", tabName = "boxplot", icon = icon("dashboard"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      # 1. "Deaths by Mechanism" tab content
+      tabItem(tabName = "boxplot",
+        source("Insight18UI.R",local = TRUE)$value
+      )
+    )
+  )
+)
+source("Insight18Server.R", local = TRUE)
+```
+
+
+####[Insight19: Deaths vs Sex/Injury mechanism](https://data.world/andywang6666/s18-db-project-3/insights/088807bf-2835-4f50-9993-7e80c48c0ef1)
+
+####[Insight20: Deaths by Race and Year for Motor Vehicle Traffic Injury](https://data.world/andywang6666/s18-db-project-3/insights/626e83d9-7a2d-4884-9217-ff6998512145)
+
+####[Insight21: Deaths Per Age Group for Each Race](https://data.world/andywang6666/s18-db-project-3/insights/502bcb2c-bd40-4e8f-9cac-a9429d29e0f9)
+
+####[Insight22: Deaths Throughout the Years for Different Age Groups](https://data.world/andywang6666/s18-db-project-3/insights/87bca1bd-3d3a-440e-bd03-ca4e364f4511)
+
+####[Insight23: Boxplots of Deaths For Each Injury Intent](https://data.world/andywang6666/s18-db-project-3/insights/4f4885e6-68cf-4a44-95e1-8ede30cb07d8)
+
+The data showed different injury intents for different sexes. Overall, more people died by unintentional deaths than any other injury intent, which could mean that people were dying of natural causes or on accident. Also, legal intervention/war had the least amount deaths, which also means that many war-driven battles have not been fought in the US recently and not many people have died due to legal interventions.
+
+####[Insight 24: Deaths For Each Sex](https://data.world/andywang6666/s18-db-project-3/insights/4de227c8-9a6b-4b13-9b83-7f99e9cfed06)
+
+####[Insight25: Deaths for Each Sex by Injury Intent](https://data.world/andywang6666/s18-db-project-3/insights/c5194efe-85f0-47fc-981e-82cef0b6806e)
+
+####[Insight26: Deaths by Injury mechanism and Sex for Hispanic and Black](https://data.world/andywang6666/s18-db-project-3/insights/ee8a2414-28ed-4955-8563-c115cd49b8ae)
+
+####[Insight27: Sex/ Injury Intent](https://data.world/andywang6666/s18-db-project-3/insights/b92d6026-0196-4a34-9112-a38718f14925)
+
+#Appendix
+
+##Display Session Information
+The [sessionInfo() fuction](https://cran.r-project.org/web/packages/sessioninfo/sessioninfo.pdf) queries and prints information about the current R session including  information about packages, and from where they were installed.
+```{r}
+sessionInfo()
+```
+
+##Data Cleaning Code.
+```{r}
+library(tidyverse)
+csvURL <- "https://query.data.world/s/gtqvtfu5owkxwtoi25jfhugajmgf5n"
+df <- read_csv(csvURL, col_types = list(
+Year = col_integer(),
+  Sex = col_character(),
+  'Age group (years)' = col_character(),
+  Race = col_character(),
+  'Injury mechanism' = col_character(),
+  'Injury intent' = col_character(),
+  Deaths = col_integer(),
+  Population = col_integer(),
+  'Age Specific Rate' = col_double(),
+  'Age Specific Rate Standard Error' = col_double(),
+  'Age Specific Rate Lower Confidence Limit' = col_double(),
+  'Age Specific Rate Upper Confidence Limit' = col_double(),
+  'Age Adjusted Rate' = col_double(),
+  'Age Adjusted Rate Standard Error' = col_double(),
+  'Age Adjusted Rate Lower Confidence Limit' = col_double(),
+  'Age Adjusted Rate Upper Confidence Limit' = col_double()
+))
+# Change .+ and -+ in column names to _
+names(df) <- gsub("\\.+", "_", names(df))
+names(df) <- gsub("-+", "_", names(df))
+# Remove non-printable characters from column names.
+names(df) <- gsub("[^ -~]", "", names(df)) 
+# Change null values in the Age Specific Rate Standard Error column to 0.
+df <- df %>% tidyr::replace_na(list('Age Specific Rate Standard Error' = 0))
+# Remove non-printable characters from all column values.
+df <- df %>% dplyr::mutate_all(funs(gsub(pattern="[^ -~]", replacement= "", .)))
+# The following write_csv followed immediately by a read_csv, fixes the column types.
+write_csv(df, "tmp.csv") 
+df <- read_csv("tmp.csv", col_types = list(
+  Year = col_integer(),
+  Sex = col_character(),
+  'Age group (years)' = col_character(),
+  Race = col_character(),
+  'Injury mechanism' = col_character(),
+  'Injury intent' = col_character(),
+  Deaths = col_integer(),
+  Population = col_integer(),
+  'Age Specific Rate' = col_double(),
+  'Age Specific Rate Standard Error' = col_double(),
+  'Age Specific Rate Lower Confidence Limit' = col_double(),
+  'Age Specific Rate Upper Confidence Limit' = col_double(),
+  'Age Adjusted Rate' = col_double(),
+  'Age Adjusted Rate Standard Error' = col_double(),
+  'Age Adjusted Rate Lower Confidence Limit' = col_double(),
+  'Age Adjusted Rate Upper Confidence Limit' = col_double()
+))
+# Now save the cleaned data to new.csv
+write_csv(df, "Injury Mortality in United States.csv")
+# Now load new.csv into a data.world Dataset.
+```
