@@ -1,6 +1,5 @@
 ---
 title: "Injury Mortality in United States"
-author: "Andy Wang, Nathan Tsai, Kevin Vu, Sharmin Anwar"
 resource_files:
 - .Renviron
 output:
